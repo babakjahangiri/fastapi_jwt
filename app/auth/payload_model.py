@@ -14,7 +14,7 @@ class JWTPayload:
     sub: str
     iat: int
     exp: int
-    jti: str = field(default_factory=uuid.uuid4)
+    jti: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str  # Name of the user
     email: str  # Email of the user
     role: RoleType  # Role of the user
