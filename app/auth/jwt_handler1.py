@@ -1,6 +1,6 @@
-import datetime
+from datetime import datetime , timedelta
 import uuid
-
+from payload_model import JWTPayload
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -18,6 +18,7 @@ users_db = {
 }
 
 
+
 class JWThandler:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -26,34 +27,34 @@ class JWThandler:
         return cls.pwd_context.verify(plain_password, hashed_password)
 
     @staticmethod
-    def signJWT(username: str):
+    def sign_jwt(username, name, email, role):
         jti = str(uuid.uuid4())
-        expiration = datetime.datetime.utcnow() + datetime.timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        expiration = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        current_time = datetime.utcnow()
+        epoch_time = int(current_time.timestamp())
+        
+        payload = JWTPayload(
+            iss="jcommerce",
+            sub=username,
+            name=name,
+            email=email,
+            role=role,
+            iat=epoch_time,
+            exp=expiration,
+            jti=jti,
+            aud="https://your-app.com"
         )
-        payload = {
-            "exp": expiration,
-            "iat": datetime.datetime.utcnow(),
-            "sub": username,
-            "jti": jti,
-        }
-        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+        token = jwt.encode(payload.__dict__, SECRET_KEY, algorithm=ALGORITHM)
         return token
 
-    @staticmethod
-    def decodeJWT(token: str):
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            username: str = payload.get("sub")
-            if username is None:
-                raise JWTError
-            return payload
-        except JWTError:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    @staticmethod
-    def token_response(token: str):
-        return {"access_token": token, "token_type": "bearer"}
+
+
+
+
+
+
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

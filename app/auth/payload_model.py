@@ -13,7 +13,7 @@ from typing import Optional
 
 @dataclass
 class JWTPayload:
-    isu: "jcommerce"
+    iss: str
     sub: str
     name: str
     email: str
@@ -22,8 +22,11 @@ class JWTPayload:
     exp: datetime
     jti: str
     aud: Optional[str] = None  # Audience (Optional field, add more fields as necessary)
-    iss: Optional[str] = None  # Issuer (Optional field)
     # Add other fields if necessary.
+
+
+
+
 
 
 # https://stackoverflow.com/questions/38897514/what-to-store-in-a-jwt
