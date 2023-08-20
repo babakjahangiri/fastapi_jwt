@@ -30,11 +30,10 @@ Create a table (or a collection if you're using a NoSQL database) to store token
 💡 _Whenever you issue a new JWT, save its details in the database. You may not necessarily need to store the whole token if you can identify tokens uniquely through other means (like using a jti claim in the JWT)._
 
 
-**issued_at****: Timestamp when the token was issued.
-**expires**_at**: Timestamp when the token will expire.
+**issued_at** : Timestamp when the token was issued.
+**expires_at** : Timestamp when the token will expire.
 **revoked**: A boolean flag indicating if the token has been revoked.
 **jti**: generate a unique value for the jti claim. This could be a random string, a UUID, or any other unique value
-
 
 
 
