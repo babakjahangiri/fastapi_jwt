@@ -1,59 +1,64 @@
-import datetime
 import uuid
+from datetime import datetime, timedelta
+from typing import Annotated
 
-import jwt
-from fastapi import Depends, FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
+from app.auth.payload_model import JWTPayload, RoleType
 
 app = FastAPI()
 
 SECRET_KEY = "super-secret-key"
 ALGORITHM = "HS256"
-users = {"alice": {"password": "alicepassword"}}
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
+users_db = {
+    "alice": {
+        "hashed_password": "$2b$12$K.bAyVLZl6LXqlHHpS8A1eK.VX20TgI4AVnq3D0a0KSlOGy3TxHxe"
+    }
+}
 
 
 class JWThandler:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    @classmethod
+    def verify_password(cls, plain_password, hashed_password):
+        return cls.pwd_context.verify(plain_password, hashed_password)
+
     @staticmethod
-    def signJWT(user: str):
+    def sign_jwt(username, name, email, role: RoleType):
         jti = str(uuid.uuid4())
-        expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-        payload = {
-            "exp": expiration,  # iser id +mongodb id
-            "iat": datetime.datetime.utcnow(),
-            "exp": datetime.datetime.utcnow(),  # expiration timestamp
-            "sub": user,
-            "jti": jti,
-        }
-        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        expiration = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        current_time = datetime.utcnow()
+        epoch_time = int(current_time.timestamp())
+
+        payload = JWTPayload(
+            iss="myapplication",
+            sub=username,
+            name=name,
+            email=email,
+            role=role,
+            iat=epoch_time,
+            exp=expiration,
+            jti=jti,
+        )
+
+        token = jwt.encode(payload.__dict__, SECRET_KEY, algorithm=ALGORITHM)
         return token
 
-    @staticmethod
-    def decodeJWT(token: str):
-        try:
-            decoded_jwt = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            return decoded_jwt
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="Token has expired")
-        except jwt.JWTError:
-            raise HTTPException(status_code=401, detail="Invalid token")
 
-    @staticmethod
-    def token_response(token: str):
-        return {"access_token": token, "token_type": "bearer"}
+# Explanation:
 
+# JWThandler now has the verify_password method leveraging passlib to verify a hashed password.
+# The users_db mock "database" contains a bcrypt hashed password for alice (which is "password").
+# The /token route uses FastAPI's built-in OAuth2PasswordRequestForm to gather the username and password.
+# The oauth2_scheme is an instance of OAuth2PasswordBearer, which provides a way to get the token from the request (typically the Authorization header).
+# The protected_route function uses Depends(oauth2_scheme) to retrieve the token and then decodes it to verify.
+# Note:
 
-@app.post("/token")
-def login(data: dict):
-    username = data.get("username")
-    password = data.get("password")
-
-    if username in users and users[username]["password"] == password:
-        token = JWThandler.signJWT(username)
-        return JWThandler.token_response(token)
-
-    raise HTTPException(status_code=401, detail="Invalid credentials")
-
-
-@app.get("/protected")
-def protected_route(user=Depends(JWThandler.decodeJWT)):
-    return {"message": f"Hello {user['sub']}"}
+# This example demonstrates JWT-based authentication with password hashing but doesn't implement a full OAuth flow.
+# In real-world applications, always keep secrets, keys, and passwords out of the code, preferably in environment variables.
+# While this example uses an in-memory mock "database", in real applications, you'd fetch users and their hashed passwords from an actual database.
