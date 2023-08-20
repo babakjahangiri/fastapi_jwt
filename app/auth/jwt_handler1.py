@@ -1,6 +1,6 @@
 from datetime import datetime , timedelta
 import uuid
-from payload_model import JWTPayload
+from app.auth.payload_model import JWTPayload
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
