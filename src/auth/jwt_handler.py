@@ -37,6 +37,8 @@ class JWThandler:
     def read_token(self, token: str) -> dict[str, any]:
         try:
             return jwt.decode(token, self._SECRET_KEY, algorithms=self._ALGORITHM)
+        except jwt.DecodeError:
+            raise ValueError("Failed to decode token!")
         except jwt.ExpiredSignatureError:
             raise ValueError("Signature has expired.")
         except jwt.InvalidTokenError:
