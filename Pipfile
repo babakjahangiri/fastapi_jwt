@@ -6,9 +6,9 @@ name = "pypi"
 [packages]
 uvicorn = {extras = ["standard"], version = "*"}
 fastapi = "*"
-python-jose = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
 python-multipart = "*"
+pyjwt = "*"
 
 [dev-packages]
 
