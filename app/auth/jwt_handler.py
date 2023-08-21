@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timedelta
 from typing import Annotated
 
@@ -7,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from app.auth.payload_model import JWTPayload, RoleType
+from app.auth.payload_model import JWTPayload
 
 app = FastAPI()
 
@@ -29,25 +28,30 @@ class JWThandler:
         return cls.pwd_context.verify(plain_password, hashed_password)
 
     @staticmethod
-    def sign_jwt(username, name, email, role: RoleType):
-        jti = str(uuid.uuid4())
-        expiration = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        current_time = datetime.utcnow()
-        epoch_time = int(current_time.timestamp())
+    def sign_jwt(payload: JWTPayload):
+        # jti = str(uuid.uuid4())
+        # expiration = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        # current_time = datetime.utcnow()
+        # epoch_time = int(current_time.timestamp())
 
-        payload = JWTPayload(
-            iss="myapplication",
-            sub=username,
-            name=name,
-            email=email,
-            role=role,
-            iat=epoch_time,
-            exp=expiration,
-            jti=jti,
-        )
+        # payload = JWTPayload(
+        #     iss="myapplication",
+        #     sub=username,
+        #     name=name,
+        #     email=email,
+        #     role=role,
+        #     iat=epoch_time,
+        #     exp=expiration,
+        #     jti=jti,
+        # )
 
-        token = jwt.encode(payload.__dict__, SECRET_KEY, algorithm=ALGORITHM)
-        return token
+        return jwt.encode(payload.__dict__, SECRET_KEY, algorithm=ALGORITHM)
+
+    def create_access_token() -> JWTPayload:
+        pass
+
+    def create_refresh_token() -> JWTPayload:
+        pass
 
 
 # Explanation:

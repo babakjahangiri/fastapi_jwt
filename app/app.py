@@ -5,6 +5,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.auth.jwt_handler import JWThandler
 from app.auth.payload_model import RoleType
 from app.db.user_db import fake_users_db
+from app.exceptions import UsernameAlreadyExistsError
+from app.usecases.register_user import RegisterUser
 
 app = FastAPI()
 
@@ -28,47 +30,38 @@ def secure():
     return {"this is a secure content"}
 
 
-@app.post("/token")
-def register_user(username, name, email, role):
-    # Check if the username is already taken
-    if username in fake_users_db:
-        raise HTTPException(status_code=400, detail="Username already taken")
-
-
 @app.post("/register")
 def register_user(username, password, name, email, role: RoleType):
-    # Check if the username is already taken
-    if username in fake_users_db:
-        raise HTTPException(status_code=400, detail="Username already taken")
-
-    password = password.encode("utf-8")
-    # Generate a salt
-    salt = bcrypt.gensalt()
-
-    # Hash the password using bcrypt and the generated salt
-    hashed_password = bcrypt.hashpw(password, salt)
-
-    # Store user information in the database
-    fake_users_db[username] = {
-        "username": username,
-        "name": name,
-        "email": email,
-        "hashed_password": hashed_password,
-        "role": RoleType.USER.value.lower(),
-        "disabled": False,
+    user_data = {
+        "username": str(username),
+        "password": str(password),
+        "name": str(name),
+        "email": str(email),
+        "role": str(
+            role.value.lower()
+        ),  # Convert the RoleType enum to its string representation
     }
 
-    print(f"salt ----> : {salt}")
-    print(f"hashed_password ----> : {hashed_password}")
+    print(user_data)
 
-    if bcrypt.checkpw(password, hashed_password):
-        print("Password is correct!")
-    else:
-        print("Password is incorrect!")
+    register_user = RegisterUser()
 
-    # Generate and return JWT token for the registered user
-    token = JWThandler.sign_jwt(username, name, email, role)
-    return {"message": "User registered successfully", "token": token}
+    try:
+        register_user.execute(user_data)
+    except UsernameAlreadyExistsError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    # print(f"salt ----> : {salt}")
+    # print(f"hashed_password ----> : {hashed_password}")
+
+    # if bcrypt.checkpw(password, hashed_password):
+    #     print("Password is correct!")
+    # else:
+    #     print("Password is incorrect!")
+
+    # # Generate and return JWT token for the registered user
+    # token = JWThandler.sign_jwt(username, name, email, role)
+    # return {"message": "User registered successfully", "token": token}
 
 
 @app.post("/token")
