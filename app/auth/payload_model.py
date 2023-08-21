@@ -1,6 +1,12 @@
+import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import Enum
+
+
+class BaseDict:
+    def asdict(self) -> dict[str, any]:
+        return asdict(self)
 
 
 class RoleType(str, Enum):
@@ -8,16 +14,17 @@ class RoleType(str, Enum):
     ADMIN = "admin"
 
 
-@dataclass
-class JWTPayload:
-    iss: str
-    sub: str
-    iat: int
-    exp: int
-    name: str  # Name of the user
-    email: str  # Email of the user
-    role: RoleType  # Role of the user
-    jti: str = field(default_factory=lambda: str(uuid.uuid4()))
+@dataclass(frozen=True)
+class JWTPayload(BaseDict):
+    iss: str = field(init=False, default="auth.website.com")
+    typ: str = field(init=False, default="unknown")
+    sub: str = ""  # User_Id
+    iat: int = field(init=False, default_factory=lambda: int(time.time()))
+    exp: int = field(init=False, default=0)
+    name: str = ""  # Name of the user'
+    email: str = ""  # Email of the user
+    role: RoleType = RoleType.USER  # Role of the user
+    jti: str = field(init=False, default_factory=lambda: str(uuid.uuid4()))
 
 
 # Issuer : It should be the URL of the authentication server that generated the token. This helps the recipient verify the source of the token.
