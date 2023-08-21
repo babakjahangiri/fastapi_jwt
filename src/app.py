@@ -2,11 +2,11 @@ import bcrypt
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from app.auth.jwt_handler import JWThandler
-from app.auth.payload_model import RoleType
-from app.db.user_db import fake_users_db
-from app.exceptions import UsernameAlreadyExistsError
-from app.usecases.register_user import RegisterUser
+from src.auth.jwt_handler import JWThandler
+from src.auth.payload_model import RoleType
+from src.db.user_db import fake_users_db
+from src.exceptions import UsernameAlreadyExistsError
+from src.usecases.register_user import RegisterUser
 
 app = FastAPI()
 

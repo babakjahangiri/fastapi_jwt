@@ -1,7 +1,7 @@
 import bcrypt
 
-from app.db.user_db import fake_users_db
-from app.exceptions import UsernameAlreadyExistsError
+from src.db.user_db import fake_users_db
+from src.exceptions import UsernameAlreadyExistsError
 
 
 class RegisterUser:
