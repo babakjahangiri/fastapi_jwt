@@ -48,6 +48,7 @@ def register_user(username, password, name, email, role: RoleType):
 
     try:
         register_user.execute(user_data)
+        return {"message":"User register successfully"}
     except UsernameAlreadyExistsError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
