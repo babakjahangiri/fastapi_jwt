@@ -1,11 +1,12 @@
-import bcrypt
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
 from src.auth.payload_model import RoleType
-from src.db.user_db import fake_users_db
 from src.exceptions import UsernameAlreadyExistsError
+from src.usecases.get_current_user import GetCurrentLoggedInUser
+from src.usecases.login import Login
+from src.usecases.logout import Logout
 from src.usecases.register_user import RegisterUser
 
 app = FastAPI()
@@ -25,9 +26,9 @@ def protected_route(token: str = Depends(oauth2_scheme)):
     return {"username": payload["sub"]}
 
 
-@app.get("/secure")
-def secure():
-    return {"this is a secure content"}
+@app.get("/admin")
+def admin_route():
+    return {"this path is available only for admins"}
 
 
 @app.post("/register")
@@ -42,39 +43,45 @@ def register_user(username, password, name, email, role: RoleType):
         ),  # Convert the RoleType enum to its string representation
     }
 
-    print(user_data)
-
     register_user = RegisterUser()
 
     try:
         register_user.execute(user_data)
+        return {"message": "User register successfully", "user_inofo": user_data}
     except UsernameAlreadyExistsError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-    # print(f"salt ----> : {salt}")
-    # print(f"hashed_password ----> : {hashed_password}")
-
-    # if bcrypt.checkpw(password, hashed_password):
-    #     print("Password is correct!")
-    # else:
-    #     print("Password is incorrect!")
-
-    # # Generate and return JWT token for the registered user
-    # token = JWThandler.sign_jwt(username, name, email, role)
-    # return {"message": "User registered successfully", "token": token}
 
 
 @app.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    login_user = Login()
+
     username = form_data.username
     password = form_data.password
 
-    user = fake_users_db.get(username)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    result = login_user.execute(username, password)
+    return result
 
-    if not JWThandler.verify_password(password, user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = JWThandler.signJWT(username)
-    return JWThandler.token_response(token)
+@app.post("/verify")
+def verify():
+    pass
+
+
+@app.post("/refresh")
+def refresh():
+    pass
+
+
+@app.get("/logout")
+def logout():
+    # NOTE: Need to get jti and invalidate token in database
+    pass
+
+
+
+@app.get("/me")
+def get_current_user(token : str):
+    current_user_usecase = GetCurrentLoggedInUser()
+    user_info = current_user_usecase.execute(token)
+    return user_info

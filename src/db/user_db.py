@@ -1,9 +1,10 @@
 fake_users_db = {
-    "babak": {
+   "babak": {
         "username": "babak",
         "full_name": "Babak Jahangiri",
         "email": "babak@babak.uk",
-        "hashed_password": "babak1234",
+        "plain_password": "babak1234",  # Plain password
+        "hashed_password": "$2y$10$A6JeQdXR0.lymWDSzRuEW.LcIdjhi0aXmknfCnT0cfQF//dB/rUk2",
         "role": "admin",
         "disabled": False,
     },
@@ -11,16 +12,18 @@ fake_users_db = {
         "username": "arshiya",
         "full_name": "Arshiya Khalili",
         "email": "Arshiya@gmail.com",
-        "hashed_password": "$2b$12$MknkghNUO3nxjMnsQPcB1.DaDAcuDzOeTrqP/j9voB12ohPRYG5yu",
+        "plain_password": "arshiya",  # Plain password
+        "hashed_password": "$2y$10$xevgOpWiwYXCZ1VXECSd/OptJE3Dq3Lo6wqFLhu7jN/zmw6Ir0WpS",
         "role": "user",
         "disabled": False,
     },
     "anonymous": {
-        "username": "anonymous",
-        "full_name": "anonymous anonymous",
+         "username": "anonymous",
+        "full_name": "anonymous",
         "email": "anonymous@gmail.com",
-        "hashed_password": "$2b$12$MknkghNUO3nxjMnsQPcB1.DaDAcuDzOeTrqP/j9voB12ohPRYG5yu",
+        "plain_password": "anonymous",  # Plain password
+        "hashed_password": "$2y$10$AQfbLRB0NxBvg.L0GMkgv.OV5RhXLK0PJ6sNH8FR0bz2LROUagWkq",
         "role": "user",
-        "disabled": True,
+        "disabled": False,
     },
 }

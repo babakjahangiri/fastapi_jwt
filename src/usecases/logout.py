@@ -6,4 +6,5 @@ class Logout:
         self.db = fake_users_db
 
     def execute(self) -> None:
+        # NOTE: Need to get jti and invalidate token in database
         pass
