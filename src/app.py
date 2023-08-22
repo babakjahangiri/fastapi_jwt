@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException , Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
@@ -6,6 +6,8 @@ from src.auth.payload_model import RoleType
 from src.exceptions import UsernameAlreadyExistsError
 from src.usecases.register_user import RegisterUser
 from src.usecases.login import Login
+from src.usecases.get_current_user import GetCurrentLoggedInUser
+from src.usecases.logout import Logout
 
 app = FastAPI()
 
@@ -41,7 +43,6 @@ def register_user(username, password, name, email, role: RoleType):
         ),  # Convert the RoleType enum to its string representation
     }
 
-    print(user_data)
 
     register_user = RegisterUser()
 
@@ -51,17 +52,6 @@ def register_user(username, password, name, email, role: RoleType):
     except UsernameAlreadyExistsError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # print(f"salt ----> : {salt}")
-    # print(f"hashed_password ----> : {hashed_password}")
-
-    # if bcrypt.checkpw(password, hashed_password):
-    #     print("Password is correct!")
-    # else:
-    #     print("Password is incorrect!")
-
-    # # Generate and return JWT token for the registered user
-    # token = JWThandler.sign_jwt(username, name, email, role)
-    # return {"message": "User registered successfully", "token": token}
 
 
 @app.post("/token")
@@ -74,3 +64,41 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     result = login_user.execute(username,password)
     return result
 
+
+@app.post("/verify")
+def verify():
+    pass
+
+
+@app.post("/refresh")
+def refresh():
+    pass
+
+
+
+@app.get("/logout")
+def logout():
+
+    logout_usecase = Logout()
+    logout_usecase.execute()
+
+    return {"message": "Logged out successfully"}
+
+
+@app.get("/me")
+def get_current_user(authorization: str = Header()):
+    print(f"Authorization header: {authorization}")
+    
+    try:
+        token = authorization.split("Bearer ")[1]
+        print(f"Extracted token: {token}")
+    except IndexError:
+        raise HTTPException(status_code=401, detail="Invalid authorization format")
+
+    current_user_usecase = GetCurrentLoggedInUser()
+    user_info = current_user_usecase.execute(token)
+
+    if user_info is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    return user_info
