@@ -82,19 +82,7 @@ def logout():
 
 
 @app.get("/me")
-def get_current_user(authorization: str = Header()):
-    print(f"Authorization header: {authorization}")
-
-    try:
-        token = authorization.split("Bearer ")[1]
-        print(f"Extracted token: {token}")
-    except IndexError:
-        raise HTTPException(status_code=401, detail="Invalid authorization format")
-
+def get_current_user(token : str):
     current_user_usecase = GetCurrentLoggedInUser()
     user_info = current_user_usecase.execute(token)
-
-    if user_info is None:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
     return user_info
