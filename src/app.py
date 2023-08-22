@@ -75,10 +75,9 @@ def refresh():
 
 @app.get("/logout")
 def logout():
-    logout_usecase = Logout()
-    logout_usecase.execute()
+    # NOTE: Need to get jti and invalidate token in database
+    pass
 
-    return {"message": "Logged out successfully"}
 
 
 @app.get("/me")
