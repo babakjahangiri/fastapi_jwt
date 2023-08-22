@@ -1,13 +1,13 @@
-from fastapi import Depends, FastAPI, HTTPException , Header
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
 from src.auth.payload_model import RoleType
 from src.exceptions import UsernameAlreadyExistsError
-from src.usecases.register_user import RegisterUser
-from src.usecases.login import Login
 from src.usecases.get_current_user import GetCurrentLoggedInUser
+from src.usecases.login import Login
 from src.usecases.logout import Logout
+from src.usecases.register_user import RegisterUser
 
 app = FastAPI()
 
@@ -26,9 +26,9 @@ def protected_route(token: str = Depends(oauth2_scheme)):
     return {"username": payload["sub"]}
 
 
-@app.get("/secure")
-def secure():
-    return {"this is a secure content"}
+@app.get("/admin")
+def admin_route():
+    return {"this path is available only for admins"}
 
 
 @app.post("/register")
@@ -43,15 +43,13 @@ def register_user(username, password, name, email, role: RoleType):
         ),  # Convert the RoleType enum to its string representation
     }
 
-
     register_user = RegisterUser()
 
     try:
         register_user.execute(user_data)
-        return {"message":"User register successfully","user_inofo":user_data}
+        return {"message": "User register successfully", "user_inofo": user_data}
     except UsernameAlreadyExistsError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 
 @app.post("/token")
@@ -61,7 +59,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     username = form_data.username
     password = form_data.password
 
-    result = login_user.execute(username,password)
+    result = login_user.execute(username, password)
     return result
 
 
@@ -75,10 +73,8 @@ def refresh():
     pass
 
 
-
 @app.get("/logout")
 def logout():
-
     logout_usecase = Logout()
     logout_usecase.execute()
 
@@ -88,7 +84,7 @@ def logout():
 @app.get("/me")
 def get_current_user(authorization: str = Header()):
     print(f"Authorization header: {authorization}")
-    
+
     try:
         token = authorization.split("Bearer ")[1]
         print(f"Extracted token: {token}")
