@@ -1,12 +1,11 @@
-import bcrypt
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
 from src.auth.payload_model import RoleType
-from src.db.user_db import fake_users_db
 from src.exceptions import UsernameAlreadyExistsError
 from src.usecases.register_user import RegisterUser
+from src.usecases.login import Login
 
 app = FastAPI()
 
@@ -48,7 +47,7 @@ def register_user(username, password, name, email, role: RoleType):
 
     try:
         register_user.execute(user_data)
-        return {"message":"User register successfully"}
+        return {"message":"User register successfully","user_inofo":user_data}
     except UsernameAlreadyExistsError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -67,15 +66,11 @@ def register_user(username, password, name, email, role: RoleType):
 
 @app.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    login_user = Login()
+
     username = form_data.username
     password = form_data.password
 
-    user = fake_users_db.get(username)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    result = login_user.execute(username,password)
+    return result
 
-    if not JWThandler.verify_password(password, user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = JWThandler.signJWT(username)
-    return JWThandler.token_response(token)
