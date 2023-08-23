@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
 from src.auth.payload_model import RoleType
-from src.exceptions import UsernameAlreadyExistsError
+from src.exceptions import UsernameAlreadyExistsError,UserNotFound
 from src.usecases.get_current_user import GetCurrentLoggedInUser
 from src.usecases.login import Login
 from src.usecases.logout import Logout
@@ -22,7 +22,7 @@ def read_root():
 
 @app.get("/protected")
 def protected_route(token: str = Depends(oauth2_scheme)):
-    payload = JWThandler.decodeJWT(token)
+    payload = JWThandler.read_token(token)
     return {"username": payload["sub"]}
 
 
@@ -74,11 +74,15 @@ def refresh():
 
 
 @app.get("/logout")
-def logout():
-    # NOTE: Need to get jti and invalidate token in database
-    pass
+def logout(user:str):
 
-
+    logout_use_case = Logout()
+    logout_successful, message = logout_use_case.execute(user)
+    
+    if logout_successful:
+        return {"message": message}
+    else:
+        return {"message": message}
 
 @app.get("/me")
 def get_current_user(token : str):
