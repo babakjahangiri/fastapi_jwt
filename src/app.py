@@ -9,7 +9,7 @@ from src.usecases.login import Login
 from src.usecases.logout import Logout
 from src.usecases.register_user import RegisterUser
 from src.usecases.reset_password import ResetPassword
-
+from src.usecases.verify_refreshtoken import VerifyRefreshtoken
 
 app = FastAPI()
 
@@ -104,3 +104,14 @@ def reset_password(userame:str,current_password:str, new_password:str):
     else:
         return {"message": message}
 
+
+
+@app.post("/verify-refresh-token")
+def verify_refresh_token(token: str):
+    verify_token = VerifyRefreshtoken()
+    verify_succcesful,mesage = verify_token.execute(token)
+
+    if verify_succcesful:
+        return {"message":mesage}
+    else:
+        return {"message":mesage}
