@@ -8,6 +8,8 @@ from src.usecases.get_current_user import GetCurrentLoggedInUser
 from src.usecases.login import Login
 from src.usecases.logout import Logout
 from src.usecases.register_user import RegisterUser
+from src.usecases.reset_password import ResetPassword
+
 
 app = FastAPI()
 
@@ -89,3 +91,16 @@ def get_current_user(token : str):
     current_user_usecase = GetCurrentLoggedInUser()
     user_info = current_user_usecase.execute(token)
     return user_info
+
+
+
+@app.post("/reset-password")
+def reset_password(userame:str,current_password:str, new_password:str):
+    rest_user_password = ResetPassword()
+    reset_successful,message =rest_user_password.execute(userame,current_password,new_password)
+
+    if reset_successful:
+        return {"message": message}
+    else:
+        return {"message": message}
+
