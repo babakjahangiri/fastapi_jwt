@@ -17,6 +17,11 @@ class AccessTokenRequired(FastAPTJWTException):
         self.message = message
 
 
+class InvalidTokenError(FastAPTJWTException):
+  def __init__(self, message: str):
+        self.message = message
+
+
 class RefreshTokenRequired(FastAPTJWTException):
     """
     Error raised when a valid, non-refresh JWT attempt to access an endpoint
