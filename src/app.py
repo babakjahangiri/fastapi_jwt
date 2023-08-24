@@ -24,11 +24,6 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/protected")
-def protected_route(token: str = Depends(oauth2_scheme)):
-    payload = JWThandler.read_token(token)
-    return {"username": payload["sub"]}
-
 
 @app.get("/admin")
 def admin_route():
@@ -86,7 +81,7 @@ def logout(user:str):
   
 
 @app.get("/me")
-def get_current_user(token : str):
+def get_current_user(token: str = Depends(oauth2_scheme)):
     current_user_usecase = GetCurrentLoggedInUser()
     user_info = current_user_usecase.execute(token)
     return user_info
