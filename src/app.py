@@ -11,6 +11,8 @@ from src.usecases.register_user import RegisterUser
 from src.usecases.reset_password import ResetPassword
 from src.usecases.verify_refreshtoken import VerifyRefreshtoken
 
+
+
 app = FastAPI()
 
 
@@ -21,11 +23,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 def read_root():
     return {"Hello": "World"}
 
-
-@app.get("/protected")
-def protected_route(token: str = Depends(oauth2_scheme)):
-    payload = JWThandler.read_token(token)
-    return {"username": payload["sub"]}
 
 
 @app.get("/admin")
@@ -79,15 +76,12 @@ def refresh():
 def logout(user:str):
 
     logout_use_case = Logout()
-    logout_successful, message = logout_use_case.execute(user)
+    return logout_use_case.execute(user)
     
-    if logout_successful:
-        return {"message": message}
-    else:
-        return {"message": message}
+  
 
 @app.get("/me")
-def get_current_user(token : str):
+def get_current_user(token: str = Depends(oauth2_scheme)):
     current_user_usecase = GetCurrentLoggedInUser()
     user_info = current_user_usecase.execute(token)
     return user_info
@@ -97,21 +91,12 @@ def get_current_user(token : str):
 @app.post("/reset-password")
 def reset_password(userame:str,current_password:str, new_password:str):
     rest_user_password = ResetPassword()
-    reset_successful,message =rest_user_password.execute(userame,current_password,new_password)
+    return rest_user_password.execute(userame,current_password,new_password)
 
-    if reset_successful:
-        return {"message": message}
-    else:
-        return {"message": message}
 
 
 
 @app.post("/verify-refresh-token")
 def verify_refresh_token(token: str):
     verify_token = VerifyRefreshtoken()
-    verify_succcesful,mesage = verify_token.execute(token)
-
-    if verify_succcesful:
-        return {"message":mesage}
-    else:
-        return {"message":mesage}
+    return verify_token.execute(token)

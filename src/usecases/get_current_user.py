@@ -5,14 +5,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWKError
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class GetCurrentLoggedInUser:
     def __init__(self):
         self.db = fake_users_db
         self.jwt_handler = JWThandler()
 
-    def execute(self, token: str = Depends(oauth2_scheme)):
+    def execute(self,token:str):
         error_credential = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='invalid credentials',
