@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
@@ -83,9 +83,9 @@ def logout(user:str):
   
 
 @app.get("/me")
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(request: Request):
     current_user_usecase = GetCurrentLoggedInUser()
-    user_info = current_user_usecase.execute(token)
+    user_info = current_user_usecase.execute(request)
     return user_info
 
 
