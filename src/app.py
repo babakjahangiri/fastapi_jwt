@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src.auth.jwt_handler import JWThandler
+from src.auth.middleware import JWTAuthenticationMiddleware
 from src.auth.payload_model import RoleType
 from src.exceptions import UsernameAlreadyExistsError,UserNotFound
 from src.usecases.get_current_user import GetCurrentLoggedInUser
@@ -14,6 +15,7 @@ from src.usecases.verify_refreshtoken import VerifyRefreshtoken
 
 
 app = FastAPI()
+app.add_middleware(JWTAuthenticationMiddleware)
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
