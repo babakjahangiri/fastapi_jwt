@@ -9,25 +9,23 @@ from jwt import PyJWKError
 class GetCurrentLoggedInUser:
     def __init__(self):
         self.db = fake_users_db
-        self.jwt_handler = JWThandler()
 
-    def execute(self,token:str):
+    def execute(self, user: dict | None):
         error_credential = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='invalid credentials',
             headers={'WWW-Authenticate': 'bearer'}
         )
 
-        try:
-            payload = self.jwt_handler.read_token(token)
-            username = payload.get('sub')
-            if not username:
-                raise error_credential
-        except PyJWKError:
+        if not user:
+            raise error_credential
+            
+        username = user.get('sub')
+        if not username:
             raise error_credential
 
-        user = self.db.get(username)
-        if user is None:
+        user_obj = self.db.get(username)
+        if user_obj is None:
             raise error_credential
 
-        return user
+        return user_obj
