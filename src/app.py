@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+from src.auth.dependencies import CurrentActiveUser
 from src.auth.jwt_handler import JWThandler
 from src.auth.payload_model import RoleType
 from src.auth.schema import User
@@ -84,6 +85,12 @@ def logout(user:str):
 @app.get("/me", response_model=User)
 def get_current_user(user: User = Depends(get_current_active_user)):
     return user
+  
+#def get_current_user(active_user: CurrentActiveUser = Depends()):
+#    return active_user.user
+
+
+
 
 
 @app.post("/reset-password")
